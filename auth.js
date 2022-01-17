@@ -2,9 +2,11 @@ const { OAuth2Client } = require('google-auth-library')
 var express = require('express')
 var router = express.Router()
 var User = require('./models/User')
+var jwt = require('jsonwebtoken')
 
 var CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 var APP_CLIENT_ID = process.env.APP_CLIENT_ID
+var SERVER_SECRET = process.env.SERVER_SECRET
 
 const client = new OAuth2Client(CLIENT_ID)
 
@@ -29,6 +31,32 @@ async function verifyIdToken(token) {
     }
 }
 
+const maxAge = 60*60
+function createToken(id) {
+    return jwt.sign({id}, SERVER_SECRET, {
+        expiresIn: maxAge,
+        issuer: "Chat App Server"
+    })
+}
+
+const requireAuth = (req, res, next) => {
+    const token = req.body.token
+    if(!token)
+        res.sendStatus(401)
+    jwt.verify(token, SERVER_SECRET, (err, decodedToken) => {
+        if(err) {
+            console.log(err)
+            res.sendStatus(401)
+        } else {
+            console.log(req.body)
+            console.log(decodedToken)
+            req.token = decodedToken
+            delete req.body.token
+            next()
+        }
+    })
+}
+
 router.post('/verifyIdToken', async (req, res) => {
     var payload = (await verifyIdToken(req.body.token))
     var isIdTokenValid = (payload != null)
@@ -39,12 +67,15 @@ router.post('/verifyIdToken', async (req, res) => {
         response.isUserNameDefined = isUserNameDefined
         response.user = user.toSimplifiedJSON()
         console.log(response.user)
+        response.token = createToken(user.id)
+        console.log(jwt.verify(response.token, SERVER_SECRET))
     }
     res.json(response)
 })
 
-router.post('/setUserName', async (req, res) => {
-    var user = await User.findById(req.body.id).exec()
+router.post('/setUserName', requireAuth, async (req, res) => {
+    console.log(req.token, req.body)
+    var user = await User.findById(req.token.id).exec()
     var userJSON = await user.setUserName(req.body.userName)
 
     res.json({message: "success", user: userJSON})

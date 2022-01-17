@@ -13,7 +13,10 @@ let userSchema = new Schema({
     lowercase: true,
     validate: [isEmail, 'Please enter a valid email']
   },
-    userName: String
+    userName: {
+        type: String,
+        unique: true
+    }
 })
 
 userSchema.statics.createUser = async function(payload) {
