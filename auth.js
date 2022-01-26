@@ -57,6 +57,26 @@ const requireAuth = (req, res, next) => {
     })
 }
 
+const socketAuth = (socket, next) => {
+    const token = socket.handshake.auth.token
+    if(!token) {
+        const error = Error("Not Authorised")
+        err.data = {content: "Please provide auth token"}
+        next(err)
+    }
+
+    jwt.verify(token, SERVER_SECRET, (err, decodedToken) => {
+        if(err) {
+            console.log(err)
+            next(err)
+        } else {
+            console.log(decodedToken)
+            socket.token = decodedToken
+            next()
+        }
+    })
+}
+
 router.post('/verifyIdToken', async (req, res) => {
     var payload = (await verifyIdToken(req.body.token))
     var isIdTokenValid = (payload != null)
@@ -82,3 +102,5 @@ router.post('/setUserName', requireAuth, async (req, res) => {
 })
 
 exports.router = router
+exports.requireAuth = requireAuth
+exports.socketAuth = socketAuth

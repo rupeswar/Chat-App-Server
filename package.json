@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon myApp.js"
+    "start": "node index.js",
+    "start-dev": "nodemon index.js"
   },
   "author": "A Rupeswar Subudhi",
   "license": "ISC",
@@ -15,7 +16,10 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.3.0",
     "mongoose": "^6.1.6",
-    "nodemon": "^2.0.15",
+    "socket.io": "^4.4.1",
     "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

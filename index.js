@@ -1,10 +1,11 @@
 var express = require("express")
 var app = express()
-var {router: authRouter} = require('./auth.js');
+var { router: authRouter } = require('./auth');
+var socket = require('./socket')
 
 var port = process.env.PORT || 3000
 
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
     console.log("Node is listening on " + port + "...")
 })
 
@@ -16,3 +17,5 @@ app.get('/', (req, res) => {
 app.use(express.json())
 
 app.use('/auth', authRouter)
+
+socket(httpServer)

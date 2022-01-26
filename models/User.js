@@ -1,7 +1,7 @@
 var mongoose = require('mongoose')
 var { isEmail } = require('validator')
 
-mongoose.connect(process.env.MONGO_USERS, { useNewUrlParser: true, useUnifiedTopology: true })
+var connection = mongoose.createConnection(`${process.env.MONGO_URI}/users`, { useNewUrlParser: true, useUnifiedTopology: true })
 
 const Schema = mongoose.Schema
 
@@ -51,6 +51,6 @@ userSchema.methods.setUserName = async function(userName) {
     return this.toSimplifiedJSON()
 }
 
-let User = mongoose.model("user", userSchema)
+let User = connection.model("user", userSchema)
 
 module.exports = User
