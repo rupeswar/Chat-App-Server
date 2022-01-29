@@ -12,6 +12,10 @@ let messageSchema = new Schema({
     from: {
         type: String,
         required: [true, `Please enter sender's id`]
+    },
+    time: {
+        type: Number,
+        default: Date.now
     }
 }, {
     discriminatorKey: 'type'
@@ -35,7 +39,9 @@ messageSchema.statics.sendDirectMessage = async function(from, to, message) {
 }
 
 messageSchema.statics.getMessages = async function(uid) {
-    let messageDocs = await this.find({to: uid}).exec()
+    let messageDocs = await this.find({to: uid})
+    .sort({time: 'asc'})
+    .exec()
     let messages = []
 
     console.log(messageDocs)
@@ -53,7 +59,6 @@ messageSchema.methods.toSimplifiedJSON = function() {
     JSON.id = this.id
     delete JSON._id
     delete JSON.__v
-    JSON.time = 0
 
     return JSON
 }
