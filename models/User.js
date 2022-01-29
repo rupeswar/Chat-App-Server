@@ -36,6 +36,21 @@ userSchema.statics.getUser = async function(payload) {
     return user
 }
 
+userSchema.statics.getUserInfoById = async function(id) {
+    let user = await this.findById(id).exec()
+    
+    return user.toSimplifiedJSON()
+}
+
+userSchema.statics.getUserInfoByUserName = async function(userName) {
+    let user = await this.findOne({userName}).exec()
+
+    if(user == null)
+        return null
+
+    return user.toSimplifiedJSON()
+}
+
 userSchema.methods.toSimplifiedJSON = function() {
     var JSON = this.toJSON()
     JSON.id = this.id

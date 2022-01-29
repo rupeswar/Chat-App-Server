@@ -1,4 +1,5 @@
 const { Server } = require('socket.io')
+var User = require('./models/User')
 var Message = require('./models/Message')
 var {socketAuth} = require('./auth')
 
@@ -27,6 +28,22 @@ function initialiseSocket(httpServer) {
             console.log(msg)
         })
 
+        socket.on('user', async (id) => {
+            var user = await User.getUserInfoById(id)
+
+            socket.emit('user', user)
+        })
+
+        socket.on('add-user', async (userName) => {
+            var user = await User.getUserInfoByUserName(userName)
+
+            if(user == null)
+                socket.emit('add-user-error', 200)
+            else {
+                socket.emit('add-user', user)
+            }
+        })
+
         socket.on('chats', async (id) => {
             var messages = await Message.getMessages(id)
 
@@ -37,11 +54,12 @@ function initialiseSocket(httpServer) {
             if(msg.type = 'Direct') {
                 var message = await Message.sendDirectMessage(msg.from, msg.to, msg.message)
                 io.directMessage(message)
+                socket.emit('message-trigger', message.toSimplifiedJSON())
             }
         })
 
         socket.on('disconnect', (reason) => {
-            console.log(reason)
+            console.log(`Connection closed because ${reason}`)
             map.delete(socket.token.id)
         })
     })
