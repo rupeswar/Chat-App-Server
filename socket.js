@@ -24,37 +24,32 @@ function initialiseSocket(httpServer) {
         console.log(`Connected to ${socket.id}`)
             map.set(socket.token.id, socket.id)
 
-        socket.on('test', (msg) => {
-            console.log(msg)
-        })
-
-        socket.on('user', async (id) => {
+        socket.on('user', async (id, respond) => {
             var user = await User.getUserInfoById(id)
 
-            socket.emit('user', user)
+            respond(user)
         })
 
-        socket.on('add-user', async (userName) => {
+        socket.on('add-user', async (userName, respond) => {
             var user = await User.getUserInfoByUserName(userName)
 
             if(user == null)
-                socket.emit('add-user-error', 200)
-            else {
-                socket.emit('add-user', user)
-            }
+                respond("error")
+            else
+                respond("ok", user)
         })
 
-        socket.on('chats', async (id) => {
+        socket.on('chats', async (id, respond) => {
             var messages = await Message.getMessages(id)
 
-            socket.emit('chats', messages)
+            respond(messages)
         })
 
-        socket.on('message', async (msg) => {
+        socket.on('message', async (msg, respond) => {
             if(msg.type = 'Direct') {
                 var message = await Message.sendDirectMessage(msg.from, msg.to, msg.message)
                 io.directMessage(message)
-                socket.emit('message-trigger', message.toSimplifiedJSON())
+                respond(message.toSimplifiedJSON())
             }
         })
 
